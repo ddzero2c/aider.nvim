@@ -92,57 +92,64 @@ function M.run_aider()
     local current_file = vim.fn.expand('%:p')
     -- 獲取選中的文字
     local selected_text = get_visual_selection()
+    
+    -- 彈出輸入框讓使用者輸入 prompt
+    vim.ui.input({
+        prompt = "Enter your prompt: ",
+        default = "",
+    }, function(input)
+        if input then
+            -- 組合 selected_text 和 prompt
+            local message = selected_text
+            if input ~= "" then
+                message = message .. "\n\nPrompt: " .. input
+            end
+            
+            -- 構建並執行 aider 命令
+            local cmd = build_aider_command(M.config, current_file, message)
+            
+            -- 創建新的 buffer 顯示結果
+            vim.cmd('vnew')
+            local buf = vim.api.nvim_get_current_buf()
+            vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
+            vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
+            vim.api.nvim_buf_set_option(buf, 'swapfile', false)
+            vim.api.nvim_buf_set_name(buf, 'Aider Result')
 
-    -- 創建臨時檔案存放 aider 結果
-    local temp_file = vim.fn.tempname()
-
-    -- 構建 aider 命令，傳入 message
-    local cmd = build_aider_command(M.config, current_file, selected_text)
-
-    -- 保存當前 buffer 和窗口
-    local current_buf = vim.api.nvim_get_current_buf()
-    local current_win = vim.api.nvim_get_current_win()
-
-    -- 創建新的 buffer 顯示結果
-    vim.cmd('vnew')
-    local buf = vim.api.nvim_get_current_buf()
-    vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
-    vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
-    vim.api.nvim_buf_set_option(buf, 'swapfile', false)
-    vim.api.nvim_buf_set_name(buf, 'Aider Result')
-
-    -- 執行 aider 命令
-    local job_id = vim.fn.jobstart(cmd, {
-        stdout_buffered = true,
-        on_stdout = function(_, data)
-            if data and #data > 1 then
-                local output_lines = {}
-                for _, line in ipairs(data) do
-                    if not line:match("^%s*$") and
-                        not line:match("^Aider") and
-                        not line:match("^%[") then
-                        table.insert(output_lines, line)
+            -- 執行 aider 命令
+            local job_id = vim.fn.jobstart(cmd, {
+                stdout_buffered = true,
+                on_stdout = function(_, data)
+                    if data and #data > 1 then
+                        local output_lines = {}
+                        for _, line in ipairs(data) do
+                            if not line:match("^%s*$") and
+                                not line:match("^Aider") and
+                                not line:match("^%[") then
+                                table.insert(output_lines, line)
+                            end
+                        end
+                        if #output_lines > 0 then
+                            vim.api.nvim_buf_set_lines(buf, -1, -1, false, output_lines)
+                        end
                     end
-                end
-                if #output_lines > 0 then
-                    vim.api.nvim_buf_set_lines(buf, -1, -1, false, output_lines)
-                end
-            end
-        end,
-        on_stderr = function(_, data)
-            if data then
-                vim.notify("Aider error: " .. vim.inspect(data), vim.log.levels.ERROR)
-            end
-        end,
-        on_exit = function(_, code)
-            if code ~= 0 then
-                vim.notify("Aider process exited with code: " .. code, vim.log.levels.ERROR)
-            end
-            -- 設置 diff mode
-            vim.cmd('windo diffthis')
-        end,
-        stdin_data = selected_text
-    })
+                end,
+                on_stderr = function(_, data)
+                    if data then
+                        vim.notify("Aider error: " .. vim.inspect(data), vim.log.levels.ERROR)
+                    end
+                end,
+                on_exit = function(_, code)
+                    if code ~= 0 then
+                        vim.notify("Aider process exited with code: " .. code, vim.log.levels.ERROR)
+                    end
+                    -- 設置 diff mode
+                    vim.cmd('windo diffthis')
+                end,
+                stdin_data = message
+            })
+        end
+    end)
 end
 
 -- 設置命令
