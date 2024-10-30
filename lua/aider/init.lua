@@ -116,35 +116,24 @@ function M.run_aider()
             -- 除錯輸出
             vim.notify("Running command: " .. cmd, vim.log.levels.INFO)
 
-            -- 修改 jobstart 的使用方式
-            vim.fn.jobstart(cmd, {
-                on_stdout = function(_, data)
-                    if data then
-                        vim.schedule(function()
-                            for _, line in ipairs(data) do
-                                if line ~= "" then
-                                    print(line)
-                                end
-                            end
-                        end)
-                    end
-                end,
-                on_stderr = function(_, data)
-                    if data then
-                        vim.schedule(function()
-                            for _, line in ipairs(data) do
-                                if line ~= "" then
-                                    vim.notify(line, vim.log.levels.ERROR)
-                                end
-                            end
-                        end)
-                    end
-                end,
+            -- 開啟終端機視窗
+            vim.cmd('botright split')
+            local term_buf = vim.api.nvim_create_buf(false, true)
+            vim.api.nvim_win_set_buf(0, term_buf)
+            
+            -- 設定終端機高度
+            vim.api.nvim_win_set_height(0, 15)
+            
+            -- 在終端機中執行 aider
+            local term_job_id = vim.fn.termopen(cmd, {
                 on_exit = function(_, code)
                     vim.schedule(function()
                         if code == 0 then
                             -- 重新讀取檔案
                             vim.cmd('checktime')
+
+                            -- 關閉終端機視窗
+                            vim.cmd('quit')
 
                             -- 開啟 diff 視窗
                             vim.cmd('diffthis')
@@ -162,6 +151,9 @@ function M.run_aider()
                     end)
                 end
             })
+
+            -- 自動進入插入模式
+            vim.cmd('startinsert')
         end
     end)
 end
