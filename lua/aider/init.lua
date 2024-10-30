@@ -153,15 +153,21 @@ function M.run_aider()
                             -- 保存 aider 修改後的內容
                             local modified_lines = vim.api.nvim_buf_get_lines(current_buf, 0, -1, false)
                             
-                            -- 還原原始檔案內容
+                            -- 還原原始檔案內容並寫入
                             local original_content = vim.fn.readfile(temp_file)
                             vim.api.nvim_buf_set_lines(current_buf, 0, -1, false, original_content)
+                            vim.cmd('write')  -- 寫入檔案
+                            vim.cmd('edit!') -- 重新讀取檔案
                             
-                            -- 在新的分割視窗中顯示修改後的內容
-                            vim.cmd('vsplit')
+                            -- 在右側新的分割視窗中顯示修改後的內容
+                            vim.cmd('botright vsplit')  -- 在右側分割
                             local new_buf = vim.api.nvim_create_buf(true, false)
                             vim.api.nvim_win_set_buf(0, new_buf)
                             vim.api.nvim_buf_set_lines(new_buf, 0, -1, false, modified_lines)
+                            
+                            -- 設定新 buffer 為唯讀
+                            vim.bo[new_buf].readonly = true
+                            vim.bo[new_buf].modifiable = false
                             
                             -- 設定兩個視窗為 diff 模式
                             vim.cmd('windo diffthis')
