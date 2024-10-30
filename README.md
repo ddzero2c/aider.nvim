@@ -41,7 +41,7 @@ require("aider").setup({
     cache_prompts = true,       -- Cache prompts for faster responses
     no_stream = true,           -- Disable streaming responses
     chat_language = 'en',       -- Chat interface language
-    sonnet = true,              -- Use GPT-4 for better responses
+    model = 'gpt-4',            -- AI model to use (default: gpt-4)
     -- Floating window options
     float_opts = {
         relative = 'editor',
@@ -54,6 +54,26 @@ require("aider").setup({
     },
 })
 ```
+
+## API Key Setup
+
+Before using aider.nvim, you need to set up your API key:
+
+1. For OpenAI models (default):
+   ```bash
+   export OPENAI_API_KEY=your_api_key_here
+   ```
+
+2. For Anthropic models:
+   ```bash
+   export ANTHROPIC_API_KEY=your_api_key_here
+   ```
+
+You can add these environment variables to your shell's startup file (e.g., `.bashrc`, `.zshrc`) or use a tool like [direnv](https://direnv.net/) to manage them.
+
+Available models:
+- OpenAI: gpt-4 (default), gpt-3.5-turbo
+- Anthropic: claude-2, claude-instant-1
 
 ## Usage
 

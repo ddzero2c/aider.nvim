@@ -9,7 +9,7 @@ local default_config = {
     cache_prompts = true,
     no_stream = true,
     chat_language = 'en',
-    sonnet = true,
+    model = 'gpt-4', -- AI model to use
     -- Add float window options
     float_opts = {
         relative = 'editor',
@@ -31,7 +31,10 @@ local function config_to_args(config)
     if config.subtree_only then table.insert(args, '--subtree-only') end
     if config.cache_prompts then table.insert(args, '--cache-prompts') end
     if config.no_stream then table.insert(args, '--no-stream') end
-    if config.sonnet then table.insert(args, '--sonnet') end
+    if config.model then
+        table.insert(args, '--model')
+        table.insert(args, config.model)
+    end
 
     -- Convert value options
     if config.chat_language then
