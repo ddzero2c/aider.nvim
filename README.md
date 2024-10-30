@@ -2,13 +2,24 @@
 
 A Neovim plugin that integrates [Aider](https://github.com/paul-gauthier/aider), an AI coding assistant, directly into your editor.
 
-## Features
+Aider uses a smart repository mapping system to understand your entire codebase:
 
-- Visual selection based AI code editing
-- Split window diff view of changes
-- Floating terminal window for Aider interaction
-- Customizable window appearance
-- Preserves original file until changes are confirmed
+- **Repository Map**: Aider creates a concise map of your git repository that includes:
+  - Important classes and functions
+  - Type information and call signatures
+  - Key relationships between different parts of code
+
+- **Smart Context**: When you make an edit request:
+  - Aider analyzes the repository structure
+  - Identifies relevant code across all files
+  - Provides the AI with necessary context for intelligent edits
+
+- **Dynamic Optimization**:
+  - Automatically adjusts the amount of context based on the chat state
+  - Focuses on the most referenced and important code parts
+  - Ensures efficient use of the AI's context window
+
+This means Aider can make informed code changes that respect your existing codebase structure and conventions, even when modifying a single file.
 
 ## Requirements
 
@@ -93,7 +104,7 @@ Add to your Neovim configuration:
 
 ```lua
 -- Basic keymap for visual mode
-vim.keymap.set('v', 'ga', ':AiderEdit<CR>', { noremap = true, silent = true })
+vim.keymap.set({'v', 'n'}, 'ga', ':AiderEdit<CR>', { noremap = true, silent = true })
 ```
 
 ## How It Works
