@@ -46,18 +46,26 @@ local function build_aider_command(config, file_path, message)
     local args = config_to_args(config)
     local cmd = config.command
 
+    -- 加入固定參數
+    table.insert(args, '--chat-mode=code')
+    table.insert(args, '--no-auto-commits')
+    
+    -- 加入檔案參數
+    table.insert(args, '--file')
+    table.insert(args, file_path)
+
     -- 加入 message 參數
     if message then
         table.insert(args, '--message')
-        table.insert(args, string.format("%q", message)) -- 用引號包住 message，避免特殊字元問題
+        table.insert(args, string.format("%q", message))
     end
 
-    -- Combine all arguments
+    -- 組合完整命令
     for _, arg in ipairs(args) do
         cmd = cmd .. ' ' .. arg
     end
 
-    return cmd .. string.format(" /add %s", file_path)
+    return cmd
 end
 
 -- Check if aider is installed
@@ -111,22 +119,8 @@ function M.run_aider()
                 message = message .. "\n\nPrompt: " .. input
             end
 
-            -- 構建 aider 命令，加入 --no-auto-commits
-            local args = config_to_args(M.config)
-            table.insert(args, '--no-auto-commits') -- 加入 --no-auto-commits 選項
-            local cmd = M.config.command
-
-            -- 加入 message 參數
-            if message then
-                table.insert(args, '--message')
-                table.insert(args, string.format("%q", message))
-            end
-
-            -- 組合完整命令
-            for _, arg in ipairs(args) do
-                cmd = cmd .. ' ' .. arg
-            end
-            cmd = cmd .. string.format(" /add %s", current_file)
+            -- 使用修改後的 build_aider_command
+            local cmd = build_aider_command(M.config, current_file, message)
 
             -- 執行 aider 命令
             vim.fn.jobstart(cmd, {
