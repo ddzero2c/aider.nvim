@@ -88,8 +88,14 @@ end
 
 -- 主要功能函數
 function M.run_aider()
-    -- 獲取當前檔案路徑
+    -- 獲取當前檔案路徑和 buffer
     local current_file = vim.fn.expand('%:p')
+    local current_buf = vim.api.nvim_get_current_buf()
+    
+    -- 保存當前 buffer 內容到暫存檔
+    local temp_file = vim.fn.tempname()
+    vim.fn.writefile(vim.api.nvim_buf_get_lines(current_buf, 0, -1, false), temp_file)
+    
     -- 獲取選中的文字
     local selected_text = get_visual_selection()
     
@@ -105,48 +111,46 @@ function M.run_aider()
                 message = message .. "\n\nPrompt: " .. input
             end
             
-            -- 構建並執行 aider 命令
-            local cmd = build_aider_command(M.config, current_file, message)
+            -- 構建 aider 命令，加入 --no-auto-commits
+            local args = config_to_args(M.config)
+            table.insert(args, '--no-auto-commits')  -- 加入 --no-auto-commits 選項
+            local cmd = M.config.command
             
-            -- 創建新的 buffer 顯示結果
-            vim.cmd('vnew')
-            local buf = vim.api.nvim_get_current_buf()
-            vim.api.nvim_buf_set_option(buf, 'buftype', 'nofile')
-            vim.api.nvim_buf_set_option(buf, 'bufhidden', 'wipe')
-            vim.api.nvim_buf_set_option(buf, 'swapfile', false)
-            vim.api.nvim_buf_set_name(buf, 'Aider Result')
-
+            -- 加入 message 參數
+            if message then
+                table.insert(args, '--message')
+                table.insert(args, string.format("%q", message))
+            end
+            
+            -- 組合完整命令
+            for _, arg in ipairs(args) do
+                cmd = cmd .. ' ' .. arg
+            end
+            cmd = cmd .. string.format(" /add %s", current_file)
+            
             -- 執行 aider 命令
-            local job_id = vim.fn.jobstart(cmd, {
-                stdout_buffered = true,
-                on_stdout = function(_, data)
-                    if data and #data > 1 then
-                        local output_lines = {}
-                        for _, line in ipairs(data) do
-                            if not line:match("^%s*$") and
-                                not line:match("^Aider") and
-                                not line:match("^%[") then
-                                table.insert(output_lines, line)
-                            end
-                        end
-                        if #output_lines > 0 then
-                            vim.api.nvim_buf_set_lines(buf, -1, -1, false, output_lines)
-                        end
-                    end
-                end,
-                on_stderr = function(_, data)
-                    if data then
-                        vim.notify("Aider error: " .. vim.inspect(data), vim.log.levels.ERROR)
-                    end
-                end,
+            vim.fn.jobstart(cmd, {
                 on_exit = function(_, code)
-                    if code ~= 0 then
-                        vim.notify("Aider process exited with code: " .. code, vim.log.levels.ERROR)
+                    if code == 0 then
+                        -- 重新讀取檔案
+                        vim.cmd('checktime')
+                        
+                        -- 開啟 diff 視窗
+                        vim.cmd('diffthis')  -- 當前視窗進入 diff 模式
+                        
+                        -- 開新視窗顯示暫存檔
+                        vim.cmd('vsplit ' .. temp_file)
+                        vim.cmd('diffthis')  -- 新視窗也進入 diff 模式
+                        
+                        -- 設定暫存檔 buffer 為唯讀
+                        vim.bo.readonly = true
+                        vim.bo.modifiable = false
+                        
+                        vim.notify("Aider completed successfully", vim.log.levels.INFO)
+                    else
+                        vim.notify("Aider failed with code: " .. code, vim.log.levels.ERROR)
                     end
-                    -- 設置 diff mode
-                    vim.cmd('windo diffthis')
-                end,
-                stdin_data = message
+                end
             })
         end
     end)
