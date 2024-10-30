@@ -35,7 +35,8 @@ Default configuration with all available options:
 ```lua
 require("aider").setup({
     command = 'aider',           -- Path to aider command
-    model = 'sonnet',  -- AI model to use
+    model = 'sonnet',            -- AI model to use
+    mode = 'diff',               -- Edit mode: 'diff' or 'inline'
     -- Floating window options
     float_opts = {
         relative = 'editor',
@@ -48,6 +49,17 @@ require("aider").setup({
     },
 })
 ```
+
+### Mode Options
+
+- `diff`: Shows changes in a split diff view (default)
+  - Left window: Original file
+  - Right window: Modified version
+  - Use this mode to review changes before applying
+- `inline`: Directly applies changes to the current file
+  - Modifies file content immediately
+  - No diff view shown
+  - Use this mode for faster editing workflow
 
 ## API Key Setup
 
