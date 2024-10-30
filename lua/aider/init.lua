@@ -3,6 +3,7 @@ local M = {}
 -- Default configuration
 local default_config = {
     command = 'aider',
+    -- 基本選項
     dark_mode = true,
     architect = true,
     subtree_only = true,
@@ -10,6 +11,13 @@ local default_config = {
     no_stream = true,
     chat_language = 'zh-tw',
     sonnet = true,
+    
+    -- 腳本相關選項
+    yes = false,            
+    auto_commits = true,    
+    dirty_commits = true,   
+    dry_run = false,        
+    commit = false,         
 }
 
 -- Convert config to command line arguments
@@ -34,9 +42,15 @@ local function config_to_args(config)
 end
 
 -- Build complete aider command
-local function build_aider_command(config, file_path)
+local function build_aider_command(config, file_path, message)
     local args = config_to_args(config)
     local cmd = config.command
+    
+    -- 加入 message 參數
+    if message then
+        table.insert(args, '--message')
+        table.insert(args, string.format("%q", message))  -- 用引號包住 message，避免特殊字元問題
+    end
     
     -- Combine all arguments
     for _, arg in ipairs(args) do
@@ -82,8 +96,8 @@ function M.run_aider()
     -- 創建臨時檔案存放 aider 結果
     local temp_file = vim.fn.tempname()
 
-    -- 構建 aider 命令
-    local cmd = build_aider_command(M.config, current_file)
+    -- 構建 aider 命令，傳入 message
+    local cmd = build_aider_command(M.config, current_file, selected_text)
 
     -- 保存當前 buffer 和窗口
     local current_buf = vim.api.nvim_get_current_buf()
