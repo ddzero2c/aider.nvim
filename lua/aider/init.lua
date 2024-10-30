@@ -11,19 +11,19 @@ local default_config = {
     no_stream = true,
     chat_language = 'zh-tw',
     sonnet = true,
-    
+
     -- 腳本相關選項
-    yes = false,            
-    auto_commits = true,    
-    dirty_commits = true,   
-    dry_run = false,        
-    commit = false,         
+    yes = false,
+    auto_commits = true,
+    dirty_commits = true,
+    dry_run = false,
+    commit = false,
 }
 
 -- Convert config to command line arguments
 local function config_to_args(config)
     local args = {}
-    
+
     -- Convert boolean options
     if config.dark_mode then table.insert(args, '--dark-mode') end
     if config.architect then table.insert(args, '--architect') end
@@ -31,13 +31,13 @@ local function config_to_args(config)
     if config.cache_prompts then table.insert(args, '--cache-prompts') end
     if config.no_stream then table.insert(args, '--no-stream') end
     if config.sonnet then table.insert(args, '--sonnet') end
-    
+
     -- Convert value options
-    if config.chat_language then 
+    if config.chat_language then
         table.insert(args, '--chat-language')
         table.insert(args, config.chat_language)
     end
-    
+
     return args
 end
 
@@ -45,18 +45,18 @@ end
 local function build_aider_command(config, file_path, message)
     local args = config_to_args(config)
     local cmd = config.command
-    
+
     -- 加入 message 參數
     if message then
         table.insert(args, '--message')
-        table.insert(args, string.format("%q", message))  -- 用引號包住 message，避免特殊字元問題
+        table.insert(args, string.format("%q", message)) -- 用引號包住 message，避免特殊字元問題
     end
-    
+
     -- Combine all arguments
     for _, arg in ipairs(args) do
         cmd = cmd .. ' ' .. arg
     end
-    
+
     return cmd .. string.format(" /add %s", file_path)
 end
 
