@@ -19,7 +19,7 @@ local default_config = {
     command = 'aider',
     -- Main options
     model = 'sonnet', -- Default model
-    mode = 'diff',  -- 'diff' or 'inline'
+    mode = 'diff',    -- 'diff' or 'inline'
     -- Float window options
     float_opts = {
         relative = 'editor',
@@ -36,6 +36,11 @@ local default_config = {
 local function config_to_args(config)
     local args = {}
 
+    table.insert(args, '--chat-mode=code')
+    table.insert(args, '--no-auto-commits')
+    table.insert(args, '--subtree-only')
+    table.insert(args, '--cache-prompts')
+    table.insert(args, '--no-stream')
     -- Model handling
     if config.model then
         local flag = model_flags[config.model]
@@ -55,10 +60,6 @@ end
 local function build_aider_command(config, file_path, message)
     local args = config_to_args(config)
     local cmd = config.command
-
-    -- 加入固定參數
-    table.insert(args, '--chat-mode=code')
-    table.insert(args, '--no-auto-commits')
 
     -- 加入檔案參數
     table.insert(args, '--file')
@@ -176,9 +177,6 @@ function M.aider_edit(opts)
             -- 使用修改後的 build_aider_command
             local cmd = build_aider_command(M.config, current_file, message)
 
-            -- 除錯輸出
-            -- vim.notify("Running command: " .. cmd, vim.log.levels.INFO)
-
             -- 計算浮動視窗的尺寸和位置
             local width = math.floor(vim.o.columns * M.config.float_opts.width)
             local height = math.floor(vim.o.lines * M.config.float_opts.height)
@@ -231,14 +229,14 @@ function M.aider_edit(opts)
 end
 
 -- 設置命令
-function M.setup(user_config)
+function M.setup(cfg)
     if not check_aider_installed() then
         vim.notify("Aider not found in PATH. Please install aider first.", vim.log.levels.ERROR)
         return
     end
 
     -- Merge user config with defaults
-    M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
+    M.config = vim.tbl_deep_extend("force", default_config, cfg or {})
 
     vim.api.nvim_create_user_command('AiderEdit', function(opts)
         M.aider_edit(opts)
