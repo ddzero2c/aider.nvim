@@ -86,7 +86,7 @@ local function get_visual_selection()
 end
 
 -- 主要功能函數
-function M.run_aider()
+function M.aider_edit()
     -- 獲取當前檔案路徑和 buffer
     local current_file = vim.fn.expand('%:p')
     local current_buf = vim.api.nvim_get_current_buf()
@@ -100,7 +100,7 @@ function M.run_aider()
 
     -- 彈出輸入框讓使用者輸入 prompt
     vim.ui.input({
-        prompt = "Enter your prompt: ",
+        prompt = "> ",
         default = "",
     }, function(input)
         if input then
@@ -112,9 +112,9 @@ function M.run_aider()
 
             -- 使用修改後的 build_aider_command
             local cmd = build_aider_command(M.config, current_file, message)
-            
+
             -- 除錯輸出
-            vim.notify("Running command: " .. cmd, vim.log.levels.INFO)
+            -- vim.notify("Running command: " .. cmd, vim.log.levels.INFO)
 
             -- 計算浮動視窗的尺寸和位置
             local width = math.floor(vim.o.columns * 0.8)
@@ -146,58 +146,44 @@ function M.run_aider()
                         if code == 0 then
                             -- 關閉浮動視窗
                             vim.api.nvim_win_close(term_win, true)
-                            
-                            -- 暫時禁用 gitsigns
-                            local gitsigns_enabled = false
-                            if vim.g.gitsigns_enabled then
-                                vim.cmd('GitSigns disable')
-                                gitsigns_enabled = true
-                            end
-                            
+
                             -- 重新讀取檔案以獲取 aider 的修改
                             vim.cmd('checktime')
-                            
+
                             -- 保存 aider 修改後的內容
                             local modified_lines = vim.api.nvim_buf_get_lines(current_buf, 0, -1, false)
-                            
+
                             -- 還原原始檔案內容並寫入
                             local original_content = vim.fn.readfile(temp_file)
                             vim.api.nvim_buf_set_lines(current_buf, 0, -1, false, original_content)
                             vim.cmd('write | edit!')
-                            
+
                             -- 創建 scratch buffer 來顯示修改後的內容
-                            local scratch_buf = vim.api.nvim_create_buf(false, true)  -- 第二個參數為 true 表示是 scratch buffer
-                            
+                            local scratch_buf = vim.api.nvim_create_buf(false, true) -- 第二個參數為 true 表示是 scratch buffer
+
                             -- 設置 scratch buffer 的一些屬性
                             vim.api.nvim_buf_set_option(scratch_buf, 'bufhidden', 'wipe')
                             vim.api.nvim_buf_set_option(scratch_buf, 'buftype', 'nofile')
                             vim.api.nvim_buf_set_option(scratch_buf, 'swapfile', false)
                             vim.api.nvim_buf_set_option(scratch_buf, 'modifiable', true)
-                            
+
                             -- 設置 buffer 名稱為原始文件名加上 [Modified]
                             local filename = vim.fn.expand('%:t')
                             vim.api.nvim_buf_set_name(scratch_buf, filename .. ' [Modified]')
-                            
+
                             -- 在右側分割視窗中打開 scratch buffer
                             vim.cmd('botright vsplit')
                             vim.api.nvim_win_set_buf(0, scratch_buf)
-                            
+
                             -- 設置內容
                             vim.api.nvim_buf_set_lines(scratch_buf, 0, -1, false, modified_lines)
-                            
+
                             -- 設定為唯讀
                             vim.api.nvim_buf_set_option(scratch_buf, 'readonly', true)
                             vim.api.nvim_buf_set_option(scratch_buf, 'modifiable', false)
-                            
+
                             -- 設定兩個視窗為 diff 模式
                             vim.cmd('windo diffthis')
-                            
-                            -- 重新啟用 gitsigns
-                            if gitsigns_enabled then
-                                vim.schedule(function()
-                                    vim.cmd('GitSigns enable')
-                                end)
-                            end
 
                             vim.notify("Aider completed successfully", vim.log.levels.INFO)
                         else
@@ -226,7 +212,7 @@ function M.setup(opts)
     M.config = vim.tbl_deep_extend("force", default_config, opts or {})
 
     vim.api.nvim_create_user_command('AiderEdit', function()
-        M.run_aider()
+        M.aider_edit()
     end, { range = true })
 end
 
