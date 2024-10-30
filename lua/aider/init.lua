@@ -5,19 +5,11 @@ local default_config = {
     command = 'aider',
     -- 基本選項
     dark_mode = true,
-    architect = true,
     subtree_only = true,
     cache_prompts = true,
     no_stream = true,
     chat_language = 'zh-tw',
     sonnet = true,
-
-    -- 腳本相關選項
-    yes = false,
-    auto_commits = true,
-    dirty_commits = true,
-    dry_run = false,
-    commit = false,
 }
 
 -- Convert config to command line arguments
@@ -26,7 +18,6 @@ local function config_to_args(config)
 
     -- Convert boolean options
     if config.dark_mode then table.insert(args, '--dark-mode') end
-    if config.architect then table.insert(args, '--architect') end
     if config.subtree_only then table.insert(args, '--subtree-only') end
     if config.cache_prompts then table.insert(args, '--cache-prompts') end
     if config.no_stream then table.insert(args, '--no-stream') end
@@ -49,7 +40,7 @@ local function build_aider_command(config, file_path, message)
     -- 加入固定參數
     table.insert(args, '--chat-mode=code')
     table.insert(args, '--no-auto-commits')
-    
+
     -- 加入檔案參數
     table.insert(args, '--file')
     table.insert(args, file_path)
@@ -109,14 +100,14 @@ function M.run_aider()
 
     -- 彈出輸入框讓使用者輸入 prompt
     vim.ui.input({
-        prompt = "Enter your prompt: ",
+        prompt = "> ",
         default = "",
     }, function(input)
         if input then
             -- 組合 selected_text 和 prompt
             local message = selected_text
             if input ~= "" then
-                message = message .. "\n\nPrompt: " .. input
+                message = message .. "\n\n" .. input
             end
 
             -- 使用修改後的 build_aider_command
