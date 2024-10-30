@@ -65,10 +65,12 @@ local function build_aider_command(config, file_path, message)
     table.insert(args, '--file')
     table.insert(args, file_path)
 
-    -- 加入 message 參數
+    -- Add message parameter with proper escaping
     if message then
         table.insert(args, '--message')
-        table.insert(args, string.format("%q", message))
+        -- Escape special characters and wrap in single quotes
+        local escaped_message = message:gsub("'", "'\\''") -- Escape single quotes
+        table.insert(args, "'" .. escaped_message .. "'")
     end
 
     -- 組合完整命令
