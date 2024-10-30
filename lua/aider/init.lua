@@ -1,5 +1,51 @@
 local M = {}
 
+-- Default configuration
+local default_config = {
+    command = 'aider',
+    dark_mode = true,
+    architect = true,
+    subtree_only = true,
+    cache_prompts = true,
+    no_stream = true,
+    chat_language = 'zh-tw',
+    sonnet = true,
+}
+
+-- Convert config to command line arguments
+local function config_to_args(config)
+    local args = {}
+    
+    -- Convert boolean options
+    if config.dark_mode then table.insert(args, '--dark-mode') end
+    if config.architect then table.insert(args, '--architect') end
+    if config.subtree_only then table.insert(args, '--subtree-only') end
+    if config.cache_prompts then table.insert(args, '--cache-prompts') end
+    if config.no_stream then table.insert(args, '--no-stream') end
+    if config.sonnet then table.insert(args, '--sonnet') end
+    
+    -- Convert value options
+    if config.chat_language then 
+        table.insert(args, '--chat-language')
+        table.insert(args, config.chat_language)
+    end
+    
+    return args
+end
+
+-- Build complete aider command
+local function build_aider_command(config, file_path)
+    local args = config_to_args(config)
+    local cmd = config.command
+    
+    -- Combine all arguments
+    for _, arg in ipairs(args) do
+        cmd = cmd .. ' ' .. arg
+    end
+    
+    return cmd .. string.format(" /add %s", file_path)
+end
+
 -- Check if aider is installed
 local function check_aider_installed()
     local handle = io.popen("which aider")
@@ -37,7 +83,7 @@ function M.run_aider()
     local temp_file = vim.fn.tempname()
 
     -- 構建 aider 命令
-    local cmd = string.format("aider /add %s", current_file)
+    local cmd = build_aider_command(M.config, current_file)
 
     -- 保存當前 buffer 和窗口
     local current_buf = vim.api.nvim_get_current_buf()
@@ -86,11 +132,14 @@ function M.run_aider()
 end
 
 -- 設置命令
-function M.setup()
+function M.setup(user_config)
     if not check_aider_installed() then
         vim.notify("Aider not found in PATH. Please install aider first.", vim.log.levels.ERROR)
         return
     end
+
+    -- Merge user config with defaults
+    M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
 
     vim.api.nvim_create_user_command('AiderEdit', function()
         M.run_aider()
