@@ -35,12 +35,7 @@ Default configuration with all available options:
 ```lua
 require("aider").setup({
     command = 'aider',           -- Path to aider command
-    dark_mode = true,           -- Use dark mode
-    subtree_only = true,        -- Only edit subtree of selected files
-    cache_prompts = true,       -- Cache prompts for faster responses
-    no_stream = true,           -- Disable streaming responses
-    chat_language = 'en',       -- Chat interface language
-    model = 'sonnet',           -- AI model to use (default: sonnet)
+    model = 'sonnet',  -- AI model to use
     -- Floating window options
     float_opts = {
         relative = 'editor',
@@ -70,7 +65,7 @@ Before using aider.nvim, you need to set up your API key:
 
 You can add these environment variables to your shell's startup file (e.g., `.bashrc`, `.zshrc`) or use a tool like [direnv](https://direnv.net/) to manage them.
 
-Default model: `claude-3-5-sonnet-20241022`, see more models [here](https://aider.chat/docs/llms.html)
+Default model: `sonnet`, see more models [here](https://aider.chat/docs/llms.html)
 
 ## Usage
 

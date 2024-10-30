@@ -1,16 +1,25 @@
 local M = {}
 
+-- Model name to flag mapping
+local model_flags = {
+    ["opus"] = "--opus",
+    ["sonnet"] = "--sonnet",
+    ["gpt-4"] = "--4",
+    ["gpt-4o"] = "--4o",
+    ["gpt-4o-mini"] = "--mini",
+    ["gpt-4-turbo"] = "--4-turbo",
+    ["gpt-3.5-turbo"] = "--35turbo",
+    ["deepseek"] = "--deepseek",
+    ["o1-mini"] = "--o1-mini",
+    ["o1-preview"] = "--o1-preview"
+}
+
 -- Default configuration
 local default_config = {
     command = 'aider',
-    -- 基本選項
-    dark_mode = true,
-    subtree_only = true,
-    cache_prompts = true,
-    no_stream = true,
-    chat_language = 'en',
-    model = 'claude-3-5-sonnet-20241022', -- AI model to use
-    -- Add float window options
+    -- Main options
+    model = 'sonnet', -- Default model
+    -- Float window options
     float_opts = {
         relative = 'editor',
         width = 0.8,  -- As fraction of editor width
@@ -26,20 +35,16 @@ local default_config = {
 local function config_to_args(config)
     local args = {}
 
-    -- Convert boolean options
-    if config.dark_mode then table.insert(args, '--dark-mode') end
-    if config.subtree_only then table.insert(args, '--subtree-only') end
-    if config.cache_prompts then table.insert(args, '--cache-prompts') end
-    if config.no_stream then table.insert(args, '--no-stream') end
+    -- Model handling
     if config.model then
-        table.insert(args, '--model')
-        table.insert(args, config.model)
-    end
-
-    -- Convert value options
-    if config.chat_language then
-        table.insert(args, '--chat-language')
-        table.insert(args, config.chat_language)
+        local flag = model_flags[config.model]
+        if flag then
+            table.insert(args, flag)
+        else
+            -- For undefined models, use --model parameter
+            table.insert(args, '--model')
+            table.insert(args, config.model)
+        end
     end
 
     return args
