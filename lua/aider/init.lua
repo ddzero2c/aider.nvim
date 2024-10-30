@@ -85,8 +85,14 @@ local function check_aider_installed()
     return result ~= ""
 end
 
--- 獲取 visual 選中的文字
-local function get_visual_selection()
+-- 獲取文字內容
+local function get_visual_selection(is_visual)
+    if not is_visual then
+        -- 在 normal mode 下獲取整個文件內容
+        return table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+    end
+
+    -- visual mode 邏輯
     local start_pos = vim.fn.getpos("'<")
     local end_pos = vim.fn.getpos("'>")
     local lines = vim.fn.getline(start_pos[2], end_pos[2])
@@ -104,7 +110,10 @@ local function get_visual_selection()
 end
 
 -- 主要功能函數
-function M.aider_edit()
+function M.aider_edit(opts)
+    -- 檢查是否為 visual mode
+    local is_visual = opts and opts.range == true
+
     -- 獲取當前檔案路徑和 buffer
     local current_file = vim.fn.expand('%:p')
     local current_buf = vim.api.nvim_get_current_buf()
@@ -113,8 +122,8 @@ function M.aider_edit()
     local temp_file = vim.fn.tempname()
     vim.fn.writefile(vim.api.nvim_buf_get_lines(current_buf, 0, -1, false), temp_file)
 
-    -- 獲取選中的文字
-    local selected_text = get_visual_selection()
+    -- 獲取選中的文字，傳入 is_visual 參數
+    local selected_text = get_visual_selection(is_visual)
 
     -- 彈出輸入框讓使用者輸入 prompt
     vim.ui.input({
@@ -224,8 +233,8 @@ function M.setup(opts)
     -- Merge user config with defaults
     M.config = vim.tbl_deep_extend("force", default_config, opts or {})
 
-    vim.api.nvim_create_user_command('AiderEdit', function()
-        M.aider_edit()
+    vim.api.nvim_create_user_command('AiderEdit', function(opts)
+        M.aider_edit(opts)
     end, { range = true })
 end
 
