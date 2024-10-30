@@ -13,8 +13,7 @@ A Neovim plugin that integrates [Aider](https://github.com/paul-gauthier/aider),
 ## Requirements
 
 - Neovim >= 0.10.2
-- [Aider](https://github.com/paul-gauthier/aider) installed and available in PATH
-- Python environment with Aider dependencies
+- [Aider](https://aider.chat/docs/install.html) installed and available in PATH
 
 ## Installation
 
@@ -41,7 +40,7 @@ require("aider").setup({
     cache_prompts = true,       -- Cache prompts for faster responses
     no_stream = true,           -- Disable streaming responses
     chat_language = 'en',       -- Chat interface language
-    model = 'gpt-4',            -- AI model to use (default: gpt-4)
+    model = 'sonnet',           -- AI model to use (default: sonnet)
     -- Floating window options
     float_opts = {
         relative = 'editor',
@@ -71,9 +70,7 @@ Before using aider.nvim, you need to set up your API key:
 
 You can add these environment variables to your shell's startup file (e.g., `.bashrc`, `.zshrc`) or use a tool like [direnv](https://direnv.net/) to manage them.
 
-Available models:
-- OpenAI: gpt-4 (default), gpt-3.5-turbo
-- Anthropic: claude-2, claude-instant-1
+Default model: `claude-3-5-sonnet-20241022`, see more models [here](https://aider.chat/docs/llms.html)
 
 ## Usage
 

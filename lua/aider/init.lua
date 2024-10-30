@@ -9,7 +9,7 @@ local default_config = {
     cache_prompts = true,
     no_stream = true,
     chat_language = 'en',
-    model = 'gpt-4', -- AI model to use
+    model = 'claude-3-5-sonnet-20241022', -- AI model to use
     -- Add float window options
     float_opts = {
         relative = 'editor',
