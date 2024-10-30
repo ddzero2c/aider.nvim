@@ -10,6 +10,16 @@ local default_config = {
     no_stream = true,
     chat_language = 'zh-tw',
     sonnet = true,
+    -- Add float window options
+    float_opts = {
+        relative = 'editor',
+        width = 0.8,    -- As fraction of editor width
+        height = 0.8,   -- As fraction of editor height
+        style = 'minimal',
+        border = 'rounded',
+        title = ' Aider ',
+        title_pos = 'center',
+    },
 }
 
 -- Convert config to command line arguments
@@ -117,23 +127,18 @@ function M.aider_edit()
             -- vim.notify("Running command: " .. cmd, vim.log.levels.INFO)
 
             -- 計算浮動視窗的尺寸和位置
-            local width = math.floor(vim.o.columns * 0.8)
-            local height = math.floor(vim.o.lines * 0.8)
+            local width = math.floor(vim.o.columns * M.config.float_opts.width)
+            local height = math.floor(vim.o.lines * M.config.float_opts.height)
             local row = math.floor((vim.o.lines - height) / 2)
             local col = math.floor((vim.o.columns - width) / 2)
 
             -- 創建浮動視窗的配置
-            local float_opts = {
-                relative = 'editor',
+            local float_opts = vim.tbl_extend("force", M.config.float_opts, {
                 row = row,
                 col = col,
                 width = width,
                 height = height,
-                style = 'minimal',
-                border = 'rounded',
-                title = ' Aider ',
-                title_pos = 'center',
-            }
+            })
 
             -- 創建浮動視窗
             local term_buf = vim.api.nvim_create_buf(false, true)
