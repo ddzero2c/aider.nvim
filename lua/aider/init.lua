@@ -116,36 +116,60 @@ function M.run_aider()
             -- 除錯輸出
             vim.notify("Running command: " .. cmd, vim.log.levels.INFO)
 
-            -- 開啟終端機視窗
-            vim.cmd('botright split')
+            -- 計算浮動視窗的尺寸和位置
+            local width = math.floor(vim.o.columns * 0.8)
+            local height = math.floor(vim.o.lines * 0.8)
+            local row = math.floor((vim.o.lines - height) / 2)
+            local col = math.floor((vim.o.columns - width) / 2)
+
+            -- 創建浮動視窗的配置
+            local float_opts = {
+                relative = 'editor',
+                row = row,
+                col = col,
+                width = width,
+                height = height,
+                style = 'minimal',
+                border = 'rounded',
+                title = ' Aider ',
+                title_pos = 'center',
+            }
+
+            -- 創建浮動視窗
             local term_buf = vim.api.nvim_create_buf(false, true)
-            vim.api.nvim_win_set_buf(0, term_buf)
-            
-            -- 設定終端機高度
-            vim.api.nvim_win_set_height(0, 15)
-            
+            local term_win = vim.api.nvim_open_win(term_buf, true, float_opts)
+
             -- 在終端機中執行 aider
             local term_job_id = vim.fn.termopen(cmd, {
                 on_exit = function(_, code)
                     vim.schedule(function()
                         if code == 0 then
-                            -- 重新讀取檔案
+                            -- 關閉浮動視窗
+                            vim.api.nvim_win_close(term_win, true)
+                            
+                            -- 重新讀取檔案以獲取 aider 的修改
                             vim.cmd('checktime')
-
-                            -- 關閉終端機視窗
-                            vim.cmd('quit')
-
-                            -- 開啟 diff 視窗
-                            vim.cmd('diffthis')
-                            vim.cmd('vsplit ' .. temp_file)
-                            vim.cmd('diffthis')
-
-                            -- 設定暫存檔 buffer 為唯讀
-                            vim.bo.readonly = true
-                            vim.bo.modifiable = false
+                            
+                            -- 保存 aider 修改後的內容
+                            local modified_lines = vim.api.nvim_buf_get_lines(current_buf, 0, -1, false)
+                            
+                            -- 還原原始檔案內容
+                            local original_content = vim.fn.readfile(temp_file)
+                            vim.api.nvim_buf_set_lines(current_buf, 0, -1, false, original_content)
+                            
+                            -- 在新的分割視窗中顯示修改後的內容
+                            vim.cmd('vsplit')
+                            local new_buf = vim.api.nvim_create_buf(true, false)
+                            vim.api.nvim_win_set_buf(0, new_buf)
+                            vim.api.nvim_buf_set_lines(new_buf, 0, -1, false, modified_lines)
+                            
+                            -- 設定兩個視窗為 diff 模式
+                            vim.cmd('windo diffthis')
 
                             vim.notify("Aider completed successfully", vim.log.levels.INFO)
                         else
+                            -- 關閉浮動視窗
+                            vim.api.nvim_win_close(term_win, true)
                             vim.notify("Aider failed with code: " .. code, vim.log.levels.ERROR)
                         end
                     end)
