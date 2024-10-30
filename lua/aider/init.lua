@@ -8,13 +8,13 @@ local default_config = {
     subtree_only = true,
     cache_prompts = true,
     no_stream = true,
-    chat_language = 'zh-tw',
+    chat_language = 'en',
     sonnet = true,
     -- Add float window options
     float_opts = {
         relative = 'editor',
-        width = 0.8,    -- As fraction of editor width
-        height = 0.8,   -- As fraction of editor height
+        width = 0.8,  -- As fraction of editor width
+        height = 0.8, -- As fraction of editor height
         style = 'minimal',
         border = 'rounded',
         title = ' Aider ',
