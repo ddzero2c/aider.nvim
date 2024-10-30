@@ -100,41 +100,66 @@ function M.run_aider()
 
     -- 彈出輸入框讓使用者輸入 prompt
     vim.ui.input({
-        prompt = "> ",
+        prompt = "Enter your prompt: ",
         default = "",
     }, function(input)
         if input then
             -- 組合 selected_text 和 prompt
             local message = selected_text
             if input ~= "" then
-                message = message .. "\n\n" .. input
+                message = message .. "\n\nPrompt: " .. input
             end
 
             -- 使用修改後的 build_aider_command
             local cmd = build_aider_command(M.config, current_file, message)
+            
+            -- 除錯輸出
+            vim.notify("Running command: " .. cmd, vim.log.levels.INFO)
 
-            -- 執行 aider 命令
+            -- 修改 jobstart 的使用方式
             vim.fn.jobstart(cmd, {
-                on_exit = function(_, code)
-                    if code == 0 then
-                        -- 重新讀取檔案
-                        vim.cmd('checktime')
-
-                        -- 開啟 diff 視窗
-                        vim.cmd('diffthis') -- 當前視窗進入 diff 模式
-
-                        -- 開新視窗顯示暫存檔
-                        vim.cmd('vsplit ' .. temp_file)
-                        vim.cmd('diffthis') -- 新視窗也進入 diff 模式
-
-                        -- 設定暫存檔 buffer 為唯讀
-                        vim.bo.readonly = true
-                        vim.bo.modifiable = false
-
-                        vim.notify("Aider completed successfully", vim.log.levels.INFO)
-                    else
-                        vim.notify("Aider failed with code: " .. code, vim.log.levels.ERROR)
+                on_stdout = function(_, data)
+                    if data then
+                        vim.schedule(function()
+                            for _, line in ipairs(data) do
+                                if line ~= "" then
+                                    print(line)
+                                end
+                            end
+                        end)
                     end
+                end,
+                on_stderr = function(_, data)
+                    if data then
+                        vim.schedule(function()
+                            for _, line in ipairs(data) do
+                                if line ~= "" then
+                                    vim.notify(line, vim.log.levels.ERROR)
+                                end
+                            end
+                        end)
+                    end
+                end,
+                on_exit = function(_, code)
+                    vim.schedule(function()
+                        if code == 0 then
+                            -- 重新讀取檔案
+                            vim.cmd('checktime')
+
+                            -- 開啟 diff 視窗
+                            vim.cmd('diffthis')
+                            vim.cmd('vsplit ' .. temp_file)
+                            vim.cmd('diffthis')
+
+                            -- 設定暫存檔 buffer 為唯讀
+                            vim.bo.readonly = true
+                            vim.bo.modifiable = false
+
+                            vim.notify("Aider completed successfully", vim.log.levels.INFO)
+                        else
+                            vim.notify("Aider failed with code: " .. code, vim.log.levels.ERROR)
+                        end
+                    end)
                 end
             })
         end
