@@ -159,14 +159,14 @@ function M.run_aider()
 end
 
 -- 設置命令
-function M.setup(user_config)
+function M.setup(opts)
     if not check_aider_installed() then
         vim.notify("Aider not found in PATH. Please install aider first.", vim.log.levels.ERROR)
         return
     end
 
     -- Merge user config with defaults
-    M.config = vim.tbl_deep_extend("force", default_config, user_config or {})
+    M.config = vim.tbl_deep_extend("force", default_config, opts or {})
 
     vim.api.nvim_create_user_command('AiderEdit', function()
         M.run_aider()
