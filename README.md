@@ -26,6 +26,23 @@ This means Aider can make informed code changes that respect your existing codeb
 - Neovim >= 0.10.2
 - [Aider](https://aider.chat/docs/install.html) installed and available in PATH
 
+Before using aider.nvim, you need to set up your API key:
+
+1. For Anthropic models (default):
+   ```bash
+   export ANTHROPIC_API_KEY=your_api_key_here
+   ```
+2. For OpenAI models:
+   ```bash
+   export OPENAI_API_KEY=your_api_key_here
+   ```
+
+
+You can add these environment variables to your shell's startup file (e.g., `.bashrc`, `.zshrc`) or use a tool like [direnv](https://direnv.net/) to manage them.
+
+Default model: `sonnet`, see more models [here](https://aider.chat/docs/llms.html)
+
+
 ## Installation
 
 Using [lazy.nvim](https://github.com/folke/lazy.nvim):
@@ -61,34 +78,17 @@ require("aider").setup({
 })
 ```
 
+
 ### Mode Options
 
 - `diff`: Shows changes in a split diff view (default)
   - Left window: Original file
   - Right window: Modified version
-  - Use this mode to review changes before applying
+  - Use this mode to review changes
 - `inline`: Directly applies changes to the current file
   - Modifies file content immediately
   - No diff view shown
   - Use this mode for faster editing workflow
-
-## API Key Setup
-
-Before using aider.nvim, you need to set up your API key:
-
-1. For OpenAI models (default):
-   ```bash
-   export OPENAI_API_KEY=your_api_key_here
-   ```
-
-2. For Anthropic models:
-   ```bash
-   export ANTHROPIC_API_KEY=your_api_key_here
-   ```
-
-You can add these environment variables to your shell's startup file (e.g., `.bashrc`, `.zshrc`) or use a tool like [direnv](https://direnv.net/) to manage them.
-
-Default model: `sonnet`, see more models [here](https://aider.chat/docs/llms.html)
 
 ## Usage
 
@@ -106,19 +106,6 @@ Add to your Neovim configuration:
 -- Basic keymap for visual mode
 vim.keymap.set({'v', 'n'}, 'ga', ':AiderEdit<CR>', { noremap = true, silent = true })
 ```
-
-## How It Works
-
-1. When triggered, the plugin:
-   - Captures the visually selected code
-   - Opens a floating terminal window
-   - Runs Aider in chat mode with the selected code
-   - Shows changes in a split diff view
-
-2. The diff view shows:
-   - Original file on the left
-   - Proposed changes on the right
-   - You can review and decide to accept or reject changes
 
 ## License
 

@@ -114,35 +114,33 @@ local function get_visual_selection(is_visual)
 end
 
 -- 處理 diff 模式
-local function handle_diff_mode(current_buf, modified_lines, temp_file)
-    -- 還原原始檔案內容並寫入
-    local original_content = vim.fn.readfile(temp_file)
-    vim.api.nvim_buf_set_lines(current_buf, 0, -1, false, original_content)
-    vim.cmd('write | edit!')
+local function handle_diff_mode(current_buf, temp_file)
+    -- 創建左側 buffer 來顯示原始內容
+    local original_buf = vim.api.nvim_create_buf(false, true)
 
-    -- 創建 scratch buffer 來顯示修改後的內容
-    local scratch_buf = vim.api.nvim_create_buf(false, true)
-
-    -- 設置 scratch buffer 的屬性
-    vim.api.nvim_buf_set_option(scratch_buf, 'bufhidden', 'wipe')
-    vim.api.nvim_buf_set_option(scratch_buf, 'buftype', 'nofile')
-    vim.api.nvim_buf_set_option(scratch_buf, 'swapfile', false)
-    vim.api.nvim_buf_set_option(scratch_buf, 'modifiable', true)
+    -- 設置原始 buffer 的屬性
+    vim.api.nvim_buf_set_option(original_buf, 'bufhidden', 'wipe')
+    vim.api.nvim_buf_set_option(original_buf, 'buftype', 'nofile')
+    vim.api.nvim_buf_set_option(original_buf, 'swapfile', false)
 
     -- 設置 buffer 名稱
     local filename = vim.fn.expand('%:t')
-    vim.api.nvim_buf_set_name(scratch_buf, filename .. ' [Modified]')
+    vim.api.nvim_buf_set_name(original_buf, filename .. ' [Original]')
 
-    -- 在右側分割視窗中打開 scratch buffer
-    vim.cmd('botright vsplit')
-    vim.api.nvim_win_set_buf(0, scratch_buf)
+    -- 在左側開啟原始內容
+    vim.cmd('topleft vsplit')
+    vim.api.nvim_win_set_buf(0, original_buf)
 
-    -- 設置內容
-    vim.api.nvim_buf_set_lines(scratch_buf, 0, -1, false, modified_lines)
+    -- 設置原始內容
+    local original_content = vim.fn.readfile(temp_file)
+    vim.api.nvim_buf_set_lines(original_buf, 0, -1, false, original_content)
 
     -- 設定為唯讀
-    vim.api.nvim_buf_set_option(scratch_buf, 'readonly', true)
-    vim.api.nvim_buf_set_option(scratch_buf, 'modifiable', false)
+    vim.api.nvim_buf_set_option(original_buf, 'readonly', true)
+    vim.api.nvim_buf_set_option(original_buf, 'modifiable', false)
+
+    -- 重新讀取當前檔案以獲取最新修改
+    vim.cmd('checktime')
 
     -- 設定兩個視窗為 diff 模式
     vim.cmd('windo diffthis')
@@ -175,6 +173,9 @@ function M.aider_edit(opts)
             if input ~= "" then
                 message = message .. "\n\nPrompt: " .. input
             end
+
+            -- 在執行 aider 前先存檔
+            vim.cmd('write')
 
             -- 使用修改後的 build_aider_command
             local cmd = build_aider_command(M.config, current_file, message)
@@ -210,8 +211,7 @@ function M.aider_edit(opts)
 
                             -- 根據模式處理修改
                             if M.config.mode == 'diff' then
-                                local modified_lines = vim.api.nvim_buf_get_lines(current_buf, 0, -1, false)
-                                handle_diff_mode(current_buf, modified_lines, temp_file)
+                                handle_diff_mode(current_buf, temp_file)
                             end
 
                             vim.notify("Aider completed successfully", vim.log.levels.INFO)
