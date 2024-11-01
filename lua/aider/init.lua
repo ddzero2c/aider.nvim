@@ -127,8 +127,8 @@ local function handle_diff_mode(current_buf, temp_file)
     local filename = vim.fn.expand('%:t')
     vim.api.nvim_buf_set_name(original_buf, filename .. ' [Original]')
 
-    -- 在左側開啟原始內容
-    vim.cmd('topleft vsplit')
+    -- 在右側開啟原始內容
+    vim.cmd('botright vsplit')
     vim.api.nvim_win_set_buf(0, original_buf)
 
     -- 設置原始內容
