@@ -84,9 +84,10 @@ require("aider").setup({
 ### Mode Options
 
 - `diff`: Shows changes in a split diff view (default)
-  - Left window: Original file
-  - Right window: Modified version
-  - Use this mode to review changes
+  - Left window: Modified
+  - Right window: Unmodified (read-only)
+  - Use `]c` and `[c` to navigate between modifications
+  - Use `dp` to restore changes
 - `inline`: Directly applies changes to the current file
   - Modifies file content immediately
   - No diff view shown
