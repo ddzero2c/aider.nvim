@@ -4,22 +4,24 @@ A Neovim plugin that integrates [Aider](https://github.com/paul-gauthier/aider),
 
 Aider uses a smart repository mapping system to understand your entire codebase:
 
-- **Repository Map**: Aider creates a concise map of your git repository that includes:
-  - Important classes and functions
-  - Type information and call signatures
-  - Key relationships between different parts of code
+## Motivation
 
-- **Smart Context**: When you make an edit request:
-  - Aider analyzes the repository structure
-  - Identifies relevant code across all files
-  - Provides the AI with necessary context for intelligent edits
+While I primarily use Aider in the terminal, I found that making simple code edits through the terminal wasn't always the most convenient approach.
+I wanted a more seamless way to integrate Aider's capabilities directly into my Neovim workflow, especially for quick, single-file modifications.
 
-- **Dynamic Optimization**:
-  - Automatically adjusts the amount of context based on the chat state
-  - Focuses on the most referenced and important code parts
-  - Ensures efficient use of the AI's context window
+What makes this plugin particularly effective is that it leverages Aider's understanding of the entire git repository.
+When making changes, Aider maintains awareness of your codebase's context, resulting in more precise and contextually appropriate modifications.
 
-This means Aider can make informed code changes that respect your existing codebase structure and conventions, even when modifying a single file.
+I've designed the plugin to open Aider's changes in diff mode,
+allowing me to navigate between modifications using `]c` and `[c`,
+and apply or reject changes with `do` and `dp` respectively.
+For more complex operations, I still prefer using Aider in the terminal, but for my daily editing needs, this setup works perfectly.
+
+As a minimalist, I'm constantly exploring better ways to use Aider within Neovim,
+aiming for better integration with native Neovim functionality.
+After searching extensively and not finding a plugin that matched my specific needs,
+I create this one. It's still somewhat experimental, and I welcome any suggestions or ideas for improvement.
+
 
 ## Requirements
 
@@ -90,15 +92,7 @@ require("aider").setup({
   - No diff view shown
   - Use this mode for faster editing workflow
 
-## Usage
-
-1. Select code in visual mode
-2. Run `:AiderEdit`
-3. Enter your prompt in the input box
-4. Review changes in the diff view
-5. Save or discard changes as needed
-
-## Recommended Keymaps
+### Recommended Keymaps
 
 Add to your Neovim configuration:
 
@@ -106,6 +100,15 @@ Add to your Neovim configuration:
 -- Basic keymap for visual mode
 vim.keymap.set({'v', 'n'}, 'ga', ':AiderEdit<CR>', { noremap = true, silent = true })
 ```
+
+
+## Usage
+
+1. Select code in visual mode
+2. Run `:AiderEdit`
+3. Enter your prompt in the input box
+4. Review changes in the diff view
+5. Save or discard changes as needed
 
 ## License
 
