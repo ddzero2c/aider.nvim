@@ -16,6 +16,7 @@ local model_flags = {
 
 -- Default configuration
 local default_config = {
+    dark_mode = true,
     command = 'aider',
     -- Main options
     model = 'sonnet', -- Default model
@@ -41,6 +42,9 @@ local function config_to_args(config)
     table.insert(args, '--subtree-only')
     table.insert(args, '--cache-prompts')
     table.insert(args, '--no-stream')
+    if config.dark_mode then
+        table.insert(args, '--dark-mode')
+    end
     -- Model handling
     if config.model then
         local flag = model_flags[config.model]
