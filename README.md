@@ -2,25 +2,15 @@
 
 A Neovim plugin that integrates [Aider](https://github.com/paul-gauthier/aider), an AI coding assistant, directly into your editor.
 
-Aider uses a smart repository mapping system to understand your entire codebase:
-
 ## Motivation
 
-While I primarily use Aider in the terminal, I found that making simple code edits through the terminal wasn't always the most convenient approach.
-I wanted a more seamless way to integrate Aider's capabilities directly into my Neovim workflow, especially for quick, single-file modifications.
+While Aider is great in the terminal, making one-file code edits could be more convenient.
+This plugin integrates Aider directly into Neovim, displaying changes in diff mode for easy move with `]c`, `[c`, and appply changes with `dp`.
 
-What makes this plugin particularly effective is that it leverages Aider's understanding of the entire git repository.
-When making changes, Aider maintains awareness of your codebase's context, resulting in more precise and contextually appropriate modifications.
+For complex tasks, terminal Aider remains preferred, but this streamlines daily edits.
+The plugin leverages Aider's understanding of your git repository context for more precise modifications.
 
-I've designed the plugin to open Aider's changes in diff mode,
-allowing me to navigate between modifications using `]c` and `[c`,
-and apply or reject changes with `do` and `dp` respectively.
-For more complex operations, I still prefer using Aider in the terminal, but for my daily editing needs, this setup works perfectly.
-
-As a minimalist, I'm constantly exploring better ways to use Aider within Neovim,
-aiming for better integration with native Neovim functionality.
-After searching extensively and not finding a plugin that matched my specific needs,
-I create this one. It's still somewhat experimental, and I welcome any suggestions or ideas for improvement.
+Created after finding no existing solutions that matched these needs. Still experimental and open to improvements.
 
 
 ## Requirements
@@ -38,12 +28,6 @@ Before using aider.nvim, you need to set up your API key:
    ```bash
    export OPENAI_API_KEY=your_api_key_here
    ```
-
-
-You can add these environment variables to your shell's startup file (e.g., `.bashrc`, `.zshrc`) or use a tool like [direnv](https://direnv.net/) to manage them.
-
-Default model: `sonnet`, see more models [here](https://aider.chat/docs/llms.html)
-
 
 ## Installation
 
@@ -80,18 +64,19 @@ require("aider").setup({
 })
 ```
 
+See more models [here](https://aider.chat/docs/llms.html)
 
 ### Mode Options
 
 - `diff`: Shows changes in a split diff view (default)
-  - Left window: Modified
-  - Right window: Unmodified (read-only)
+  - Left window: Original
+  - Right window: Aider's modifications
   - Use `]c` and `[c` to navigate between modifications
-  - Use `dp` to restore changes
+  - Use `dp` to apply changes
 - `inline`: Directly applies changes to the current file
   - Modifies file content immediately
   - No diff view shown
-  - Use this mode for faster editing workflow
+  - Use this mode for faster editing workflow, ideal for users who use [mini.nvim](https://github.com/echasnovski/mini.nvim)
 
 ### Recommended Keymaps
 
